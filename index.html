@@ -94,12 +94,47 @@
   .item p.desc{font-size:0.85rem;color:var(--grey);margin:0 0 16px;line-height:1.5;min-height:2.6em;}
   .swatches{
     display:flex;justify-content:center;gap:7px;
-    margin-bottom:14px;
+    margin-bottom:10px;
   }
   .swatch{
-    width:13px;height:13px;border-radius:50%;
+    width:16px;height:16px;border-radius:50%;
     border:1px solid rgba(0,0,0,0.15);
     display:inline-block;
+    cursor:pointer;
+    transition:transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .swatch:hover{transform:scale(1.15);}
+  .swatch.selected{
+    box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--ink);
+  }
+  .sizes{
+    display:flex;justify-content:center;gap:6px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+  .size-btn{
+    font-family:'Inter',sans-serif;
+    font-size:0.72rem;font-weight:600;
+    padding:3px 8px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:#fff;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .size-btn:hover{border-color:var(--ink);}
+  .size-btn.selected{
+    background:var(--ink);color:#fff;border-color:var(--ink);
+  }
+  .select-hint{
+    font-size:0.7rem;color:var(--bite);
+    margin-bottom:8px;
+    min-height:1em;
+  }
+  .buy.disabled{
+    opacity:0.35;
+    pointer-events:none;
+    border-bottom-color:transparent;
   }
   .price{font-weight:600;font-size:0.95rem;}
   .buy{
@@ -213,11 +248,20 @@
         <span class="tag">Limited · 047/∞</span>
         <h3>Exclusive Edition</h3>
         <p class="desc">Organic cotton, numbered.<br>A design that won't repeat.</p>
+        <div class="sizes" style="justify-content:flex-start;margin-top:8px;">
+          <button class="size-btn" data-size="XS">XS</button>
+          <button class="size-btn" data-size="S">S</button>
+          <button class="size-btn" data-size="M">M</button>
+          <button class="size-btn" data-size="L">L</button>
+          <button class="size-btn" data-size="XL">XL</button>
+          <button class="size-btn" data-size="2XL">2XL</button>
+          <button class="size-btn" data-size="3XL">3XL</button>
+        </div>
       </div>
     </div>
     <div class="strip">
       <span class="price">$45</span>
-      <a class="buy" href="https://buy.stripe.com/test_8x23cn50k24oeuNbykaMU09" target="_blank" rel="noopener">Buy</a>
+      <a class="buy disabled" href="https://buy.stripe.com/test_8x23cn50k24oeuNbykaMU09" target="_blank" rel="noopener">Buy</a>
     </div>
   </div>
 
@@ -228,12 +272,21 @@
       <h3>T-Shirt</h3>
       <p class="desc">Unisex, 100% cotton.</p>
       <div class="swatches">
-        <span class="swatch" style="background:#171412" title="Negro"></span>
-        <span class="swatch" style="background:#fff" title="Blanco"></span>
+        <span data-color="Negro" class="swatch" style="background:#171412" title="Negro"></span>
+        <span data-color="Blanco" class="swatch" style="background:#fff" title="Blanco"></span>
       </div>
+      <div class="select-hint"></div>
+      <div class="select-hint"></div>
+      <div class="sizes">
+        <button class="size-btn" data-size="S">S</button>
+        <button class="size-btn" data-size="M">M</button>
+        <button class="size-btn" data-size="L">L</button>
+        <button class="size-btn" data-size="XL">XL</button>
+      </div>
+      <div class="select-hint"></div>
       <div class="price-row">
         <span class="price">$22</span>
-        <a class="buy" href="https://buy.stripe.com/test_cNi7sDfEYfVe86pgSEaMU05" target="_blank" rel="noopener">Buy</a>
+        <a class="buy disabled" href="https://buy.stripe.com/test_cNi7sDfEYfVe86pgSEaMU05" target="_blank" rel="noopener">Buy</a>
       </div>
     </article>
 
@@ -242,14 +295,21 @@
       <h3>Hoodie</h3>
       <p class="desc">Hooded, heavyweight cotton.</p>
       <div class="swatches">
-        <span class="swatch" style="background:#171412" title="Negro"></span>
-        <span class="swatch" style="background:#fff" title="Blanco"></span>
-        <span class="swatch" style="background:#a9c9e0" title="Azul cielo"></span>
-        <span class="swatch" style="background:#f5c6d3" title="Rosa clarito"></span>
+        <span data-color="Negro" class="swatch" style="background:#171412" title="Negro"></span>
+        <span data-color="Blanco" class="swatch" style="background:#fff" title="Blanco"></span>
+        <span data-color="Azul cielo" class="swatch" style="background:#a9c9e0" title="Azul cielo"></span>
+        <span data-color="Rosa clarito" class="swatch" style="background:#f5c6d3" title="Rosa clarito"></span>
       </div>
+      <div class="sizes">
+        <button class="size-btn" data-size="S">S</button>
+        <button class="size-btn" data-size="M">M</button>
+        <button class="size-btn" data-size="L">L</button>
+        <button class="size-btn" data-size="XL">XL</button>
+      </div>
+      <div class="select-hint"></div>
       <div class="price-row">
         <span class="price">$40</span>
-        <a class="buy" href="https://buy.stripe.com/test_aFa3cnfEYeRadqJ6e0aMU06" target="_blank" rel="noopener">Buy</a>
+        <a class="buy disabled" href="https://buy.stripe.com/test_aFa3cnfEYeRadqJ6e0aMU06" target="_blank" rel="noopener">Buy</a>
       </div>
     </article>
 
@@ -258,12 +318,12 @@
       <h3>Tote Bag</h3>
       <p class="desc">Sturdy cotton tote.</p>
       <div class="swatches">
-        <span class="swatch" style="background:#171412" title="Negro"></span>
-        <span class="swatch" style="background:#fff" title="Blanco"></span>
+        <span data-color="Negro" class="swatch" style="background:#171412" title="Negro"></span>
+        <span data-color="Blanco" class="swatch" style="background:#fff" title="Blanco"></span>
       </div>
       <div class="price-row">
         <span class="price">$25</span>
-        <a class="buy" href="https://buy.stripe.com/test_00weV578sfVegCV1XKaMU07" target="_blank" rel="noopener">Buy</a>
+        <a class="buy disabled" href="https://buy.stripe.com/test_00weV578sfVegCV1XKaMU07" target="_blank" rel="noopener">Buy</a>
       </div>
     </article>
 
@@ -272,12 +332,12 @@
       <h3>Mug</h3>
       <p class="desc">Ceramic, colored rim and handle.</p>
       <div class="swatches">
-        <span class="swatch" style="background:#171412" title="Negro"></span>
-        <span class="swatch" style="background:#fff" title="Blanco"></span>
+        <span data-color="Negro" class="swatch" style="background:#171412" title="Negro"></span>
+        <span data-color="Blanco" class="swatch" style="background:#fff" title="Blanco"></span>
       </div>
       <div class="price-row">
         <span class="price">$17</span>
-        <a class="buy" href="https://buy.stripe.com/test_fZu28j2ScaAUeuNdGsaMU08" target="_blank" rel="noopener">Buy</a>
+        <a class="buy disabled" href="https://buy.stripe.com/test_fZu28j2ScaAUeuNdGsaMU08" target="_blank" rel="noopener">Buy</a>
       </div>
     </article>
 
@@ -298,5 +358,58 @@
   </footer>
 
 </div>
+
+<script>
+(function(){
+  document.querySelectorAll('.item, .promo').forEach(function(card){
+    var swatches = card.querySelectorAll('.swatch');
+    var sizes = card.querySelectorAll('.size-btn');
+    var buy = card.querySelector('.buy');
+    if (!buy) return;
+
+    var needsColor = swatches.length > 0;
+    var needsSize = sizes.length > 0;
+    var selectedColor = null, selectedSize = null;
+    var hint = card.querySelector('.select-hint');
+
+    function checkReady(){
+      var ready = (!needsColor || selectedColor) && (!needsSize || selectedSize);
+      if (ready) {
+        buy.classList.remove('disabled');
+        if (hint) hint.textContent = '';
+      } else {
+        buy.classList.add('disabled');
+      }
+    }
+
+    swatches.forEach(function(sw){
+      sw.addEventListener('click', function(){
+        swatches.forEach(function(s){ s.classList.remove('selected'); });
+        sw.classList.add('selected');
+        selectedColor = sw.getAttribute('data-color');
+        checkReady();
+      });
+    });
+
+    sizes.forEach(function(sz){
+      sz.addEventListener('click', function(){
+        sizes.forEach(function(s){ s.classList.remove('selected'); });
+        sz.classList.add('selected');
+        selectedSize = sz.getAttribute('data-size');
+        checkReady();
+      });
+    });
+
+    buy.addEventListener('click', function(e){
+      if (buy.classList.contains('disabled')) {
+        e.preventDefault();
+        if (hint) hint.textContent = 'Choose color and size before buying';
+      }
+    });
+
+    checkReady();
+  });
+})();
+</script>
 </body>
 </html>
