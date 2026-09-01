@@ -396,6 +396,7 @@
 <script>
 (function(){
   var WORKER_URL = 'https://kokomo-cart.edenkokomo.workers.dev/create-checkout-session';
+  var RETURN_PATH = '/happyfriendlykokomo-en/';
   document.querySelectorAll('.item, .promo').forEach(function(card){
     var swatches = card.querySelectorAll('.swatch');
     var sizes = card.querySelectorAll('.size-btn');
@@ -460,7 +461,8 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: [{ id: productId, color: selectedColor, talla: selectedSize, cantidad: 1 }]
+          items: [{ id: productId, color: selectedColor, talla: selectedSize, cantidad: 1 }],
+          return_path: RETURN_PATH
         })
       })
         .then(function(res){
