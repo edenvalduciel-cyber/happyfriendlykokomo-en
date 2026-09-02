@@ -505,6 +505,73 @@
   var WORKER_URL = 'https://kokomo-cart.edenkokomo.workers.dev/create-checkout-session';
   var RETURN_PATH = '/happyfriendlykokomo-en/';
   var COLOR_SLUGS = { 'Black': 'negro', 'White': 'blanco', 'Natural': 'natural', 'Sky Blue': 'azulcielo', 'Light Pink': 'rosaclarito' };
+  var ANGLE_SUFFIXES = ['', '-b', '-c', '-d'];
+
+  function probeImage(url){
+    return new Promise(function(resolve){
+      var img = new Image();
+      img.onload = function(){ resolve(url); };
+      img.onerror = function(){ resolve(null); };
+      img.src = url;
+    });
+  }
+
+  function loadGallerySlides(base, suffixes){
+    return Promise.all(suffixes.map(function(suf){ return probeImage(base + suf + '.jpg'); }))
+      .then(function(results){ return results.filter(Boolean); });
+  }
+
+  // Builds a card's gallery control (arrows + dots). setSlides() can be
+  // called as many times as needed (every time the chosen color or design
+  // changes) and rebuilds the shown photos from scratch, always starting
+  // at the first one.
+  function setupGallery(art){
+    var current = 0;
+    var dotsWrap = art.querySelector('.gallery-dots');
+    var navEl = art.querySelector('.gallery-nav');
+
+    function slidesNow(){ return art.querySelectorAll('.gallery-slide'); }
+
+    function show(i){
+      var slides = slidesNow();
+      if (!slides.length) return;
+      if (slides[current]) slides[current].classList.remove('active');
+      if (dotsWrap && dotsWrap.children[current]) dotsWrap.children[current].classList.remove('active');
+      current = (i + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      if (dotsWrap && dotsWrap.children[current]) dotsWrap.children[current].classList.add('active');
+    }
+
+    function setSlides(urls, altText, objectFit){
+      slidesNow().forEach(function(el){ el.remove(); });
+      if (dotsWrap) dotsWrap.innerHTML = '';
+      urls.forEach(function(url, i){
+        var img = document.createElement('img');
+        img.className = 'gallery-slide' + (i === 0 ? ' active' : '');
+        img.src = url;
+        img.alt = altText;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = objectFit;
+        art.insertBefore(img, navEl || null);
+        if (dotsWrap) {
+          var dot = document.createElement('span');
+          dot.className = 'gallery-dot' + (i === 0 ? ' active' : '');
+          dot.addEventListener('click', function(){ show(i); });
+          dotsWrap.appendChild(dot);
+        }
+      });
+      current = 0;
+      art.classList.toggle('multi', urls.length > 1);
+    }
+
+    var prevBtn = art.querySelector('.gallery-prev');
+    var nextBtn = art.querySelector('.gallery-next');
+    if (prevBtn) prevBtn.addEventListener('click', function(e){ e.preventDefault(); show(current - 1); });
+    if (nextBtn) nextBtn.addEventListener('click', function(e){ e.preventDefault(); show(current + 1); });
+
+    return { setSlides: setSlides };
+  }
 
   // Single checkout entry point for the whole site: both a card's "Buy"
   // button and the cart drawer's own button end up here, and both ALWAYS
@@ -555,23 +622,43 @@
     var designs = card.querySelectorAll('.design-btn');
     var needsDesign = designs.length > 0;
     var selectedDesign = null;
-    var artImg = card.querySelector('.gallery-slide');
+    // Photo gallery (1 to 4 per color+design combination). Tries whether
+    // images/{base}.jpg, {base}-b.jpg, {base}-c.jpg, {base}-d.jpg exist and
+    // only shows the ones that respond 200 - so the rest of the angles
+    // (back, on model, in a scene) can be uploaded gradually without
+    // breaking anything or having to touch this code again.
+    var artEl = card.querySelector('.art');
+    var gallery = artEl ? setupGallery(artEl) : null;
+    var initialImg = artEl ? artEl.querySelector('.gallery-slide') : null;
+    var objectFit = (initialImg && initialImg.style.objectFit) || 'cover';
+    var initialSrc = initialImg ? initialImg.getAttribute('src') : null;
+    var initialBase = initialSrc ? initialSrc.replace(/\.jpg$/, '') : null;
 
-    // La foto grande cambia sola en cuanto hay color + diseno (los que haya
-    // elegidos, o los primeros de la lista mientras no se elija nada, para
-    // no dejar la tarjeta con una imagen que no corresponde a nada real).
     function updateImagen(){
-      if (!needsDesign || !artImg || !productId) return;
-      var diseno = selectedDesign || (designs[0] && designs[0].getAttribute('data-design'));
-      if (!diseno) return;
-      if (needsColor) {
-        var color = selectedColor || (swatches[0] && swatches[0].getAttribute('data-color'));
-        if (!color) return;
-        var colorSlug = COLOR_SLUGS[color] || color.toLowerCase();
-        artImg.src = 'images/' + productId + '-' + colorSlug + '-' + diseno + '.jpg';
+      if (!gallery) return;
+      var base;
+      if (needsDesign) {
+        if (!productId) return;
+        var diseno = selectedDesign || (designs[0] && designs[0].getAttribute('data-design'));
+        if (!diseno) return;
+        if (needsColor) {
+          var color = selectedColor || (swatches[0] && swatches[0].getAttribute('data-color'));
+          if (!color) return;
+          var colorSlug = COLOR_SLUGS[color] || color.toLowerCase();
+          base = 'images/' + productId + '-' + colorSlug + '-' + diseno;
+        } else {
+          base = 'images/' + productId + '-' + diseno;
+        }
+      } else if (initialBase) {
+        base = initialBase;
       } else {
-        artImg.src = 'images/' + productId + '-' + diseno + '.jpg';
+        return;
       }
+      var altText = (card.querySelector('h3') || {}).textContent || '';
+      loadGallerySlides(base, ANGLE_SUFFIXES).then(function(urls){
+        if (!urls.length) urls = [base + '.jpg'];
+        gallery.setSlides(urls, altText.trim(), objectFit);
+      });
     }
 
     function checkReady(){
@@ -632,7 +719,7 @@
       }
       // "Buy" also counts as adding to the cart: the checkout that follows
       // then includes this PLUS whatever was already in the cart.
-      var imgElBuy = card.querySelector('.gallery-slide, .art img');
+      var imgElBuy = card.querySelector('.gallery-slide.active, .gallery-slide, .art img');
       anadirAlCarrito({
         id: productId,
         nombre: card.querySelector('h3').textContent.trim(),
@@ -661,7 +748,7 @@
           return;
         }
         if (!productId) return;
-        var imgEl = card.querySelector('.gallery-slide, .art img');
+        var imgEl = card.querySelector('.gallery-slide.active, .gallery-slide, .art img');
         anadirAlCarrito({
           id: productId,
           nombre: card.querySelector('h3').textContent.trim(),
@@ -681,39 +768,7 @@
     }
 
     checkReady();
-  });
-
-  // Galeria de fotos: se activa sola en cuanto un producto tenga mas de
-  // una <img class="gallery-slide"> dentro de su .art. Con una sola foto
-  // (el caso de hoy) no se muestra ninguna flecha ni punto: no hay nada
-  // que enganar. En cuanto se anadan fotos reales (espalda, doblada...)
-  // solo hay que pegar mas <img class="gallery-slide" src="..."> dentro
-  // del mismo .art y esto se enciende automaticamente.
-  document.querySelectorAll('.art').forEach(function(art){
-    var slides = art.querySelectorAll('.gallery-slide');
-    if (slides.length <= 1) return;
-    art.classList.add('multi');
-    var dotsWrap = art.querySelector('.gallery-dots');
-    var current = 0;
-    if (dotsWrap) {
-      slides.forEach(function(_, i){
-        var dot = document.createElement('span');
-        dot.className = 'gallery-dot' + (i === 0 ? ' active' : '');
-        dot.addEventListener('click', function(){ show(i); });
-        dotsWrap.appendChild(dot);
-      });
-    }
-    function show(i){
-      slides[current].classList.remove('active');
-      if (dotsWrap) dotsWrap.children[current].classList.remove('active');
-      current = (i + slides.length) % slides.length;
-      slides[current].classList.add('active');
-      if (dotsWrap) dotsWrap.children[current].classList.add('active');
-    }
-    var prevBtn = art.querySelector('.gallery-prev');
-    var nextBtn = art.querySelector('.gallery-next');
-    if (prevBtn) prevBtn.addEventListener('click', function(e){ e.preventDefault(); show(current - 1); });
-    if (nextBtn) nextBtn.addEventListener('click', function(e){ e.preventDefault(); show(current + 1); });
+    updateImagen();
   });
 
   // ---- Carrito acumulado: varios productos, un solo pago ----
