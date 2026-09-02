@@ -456,13 +456,9 @@
     </article>
 
     <article class="item" data-product="mug">
-      <div class="art"><img class="gallery-slide active" src="images/mug-negro-trex.jpg" alt="Mug" style="width:100%;height:100%;object-fit:cover;"><div class="gallery-nav"><button type="button" class="gallery-prev" aria-label="Foto anterior">‹</button><button type="button" class="gallery-next" aria-label="Foto siguiente">›</button></div><div class="gallery-dots"></div></div>
+      <div class="art"><img class="gallery-slide active" src="images/mug-trex.jpg" alt="Mug" style="width:100%;height:100%;object-fit:cover;"><div class="gallery-nav"><button type="button" class="gallery-prev" aria-label="Foto anterior">‹</button><button type="button" class="gallery-next" aria-label="Foto siguiente">›</button></div><div class="gallery-dots"></div></div>
       <h3>Mug</h3>
-      <p class="desc">Ceramic, colored rim and handle.</p>
-      <div class="swatches">
-        <span data-color="Black" class="swatch" style="background:#171412" title="Black"></span>
-        <span data-color="White" class="swatch" style="background:#fff" title="White"></span>
-      </div>
+      <p class="desc">White ceramic.</p>
       <div class="designs"><button type="button" class="design-btn" data-design="trex" style="background-image:url('images/diseno-trex.png')" title="T-Rex"></button><button type="button" class="design-btn" data-design="elefante" style="background-image:url('images/diseno-elefante.png')" title="Elephant"></button><button type="button" class="design-btn" data-design="unicornio" style="background-image:url('images/diseno-unicornio.png')" title="Unicorn"></button><button type="button" class="design-btn" data-design="cerdo" style="background-image:url('images/diseno-cerdo.png')" title="Pig"></button></div>
       <div class="sizes"></div>
       <div class="select-hint"></div>
@@ -566,11 +562,16 @@
     // no dejar la tarjeta con una imagen que no corresponde a nada real).
     function updateImagen(){
       if (!needsDesign || !artImg || !productId) return;
-      var color = selectedColor || (swatches[0] && swatches[0].getAttribute('data-color'));
       var diseno = selectedDesign || (designs[0] && designs[0].getAttribute('data-design'));
-      if (!color || !diseno) return;
-      var colorSlug = COLOR_SLUGS[color] || color.toLowerCase();
-      artImg.src = 'images/' + productId + '-' + colorSlug + '-' + diseno + '.jpg';
+      if (!diseno) return;
+      if (needsColor) {
+        var color = selectedColor || (swatches[0] && swatches[0].getAttribute('data-color'));
+        if (!color) return;
+        var colorSlug = COLOR_SLUGS[color] || color.toLowerCase();
+        artImg.src = 'images/' + productId + '-' + colorSlug + '-' + diseno + '.jpg';
+      } else {
+        artImg.src = 'images/' + productId + '-' + diseno + '.jpg';
+      }
     }
 
     function checkReady(){
